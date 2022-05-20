@@ -1,0 +1,411 @@
+---
+title: "Canopy Growth Dashboard Demo"
+output:
+  flexdashboard::flex_dashboard:
+    theme:
+      version: 4
+      bg: "#e3e3e2"
+      fg: "#0d0d0d" 
+      primary: "#a6873b"
+      navbar-bg: "#a6873b"
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{css echo = FALSE}
+.section.sidebar {
+  background-color: #e3e3e2;
+}
+```
+
+
+
+
+
+```{r global, include=FALSE}
+require(flexdashboard)
+require(tidyverse)
+require(ggradar)
+require(scales)
+require(plotly)
+require(DT)
+require(treemap)
+
+can_pal <- c("#0d0d0d", "#a6873b", "#8e8e8e", "#c5b690", "#6c6c6b", "#bba474", "#746850")
+
+set.seed(20220519)
+dat <- data.frame(
+  Product = rep(c("Product 1", "Product 2", "Product 3", "Product 4", "Product 5", "Product 6"), each = 100),
+  Focused = c(
+    rnorm(n = 100, mean = 65, sd = 8),
+    rnorm(n = 100, mean = 70, sd = 8),
+    rnorm(n = 100, mean = 35, sd = 8),
+    rnorm(n = 100, mean = 34, sd = 8),
+    rnorm(n = 100, mean = 30, sd = 8),
+    rnorm(n = 100, mean = 25, sd = 8)),
+  Energized = c(
+    rnorm(n = 100, mean = 60, sd = 8),
+    rnorm(n = 100, mean = 45, sd = 8),
+    rnorm(n = 100, mean = 67, sd = 8),
+    rnorm(n = 100, mean = 36, sd = 8),
+    rnorm(n = 100, mean = 66, sd = 8),
+    rnorm(n = 100, mean = 24, sd = 8)),
+  Relaxed = c(
+    rnorm(n = 100, mean = 40, sd = 8),
+    rnorm(n = 100, mean = 45, sd = 8),
+    rnorm(n = 100, mean = 40, sd = 8),
+    rnorm(n = 100, mean = 66, sd = 8),
+    rnorm(n = 100, mean = 30, sd = 8),
+    rnorm(n = 100, mean = 67, sd = 8)),
+  Happy = c(
+    rnorm(n = 100, mean = 30, sd = 8),
+    rnorm(n = 100, mean = 40, sd = 8),
+    rnorm(n = 100, mean = 59, sd = 8),
+    rnorm(n = 100, mean = 58, sd = 8),
+    rnorm(n = 100, mean = 72, sd = 8),
+    rnorm(n = 100, mean = 62, sd = 8)),
+  Sleepy = c(
+    rnorm(n = 100, mean = 20, sd = 8),
+    rnorm(n = 100, mean = 30, sd = 8),
+    rnorm(n = 100, mean = 25, sd = 8),
+    rnorm(n = 100, mean = 50, sd = 8),
+    rnorm(n = 100, mean = 24, sd = 8),
+    rnorm(n = 100, mean = 67, sd = 8)),
+  Alert = c(
+    rnorm(n = 100, mean = 60, sd = 8),
+    rnorm(n = 100, mean = 70, sd = 8),
+    rnorm(n = 100, mean = 50, sd = 8),
+    rnorm(n = 100, mean = 30, sd = 8),
+    rnorm(n = 100, mean = 46, sd = 8),
+    rnorm(n = 100, mean = 22, sd = 8)),
+  Calm = c(
+    rnorm(n = 100, mean = 40, sd = 8),
+    rnorm(n = 100, mean = 30, sd = 8),
+    rnorm(n = 100, mean = 25, sd = 8),
+    rnorm(n = 100, mean = 68, sd = 8),
+    rnorm(n = 100, mean = 34, sd = 8),
+    rnorm(n = 100, mean = 64, sd = 8)),
+  Satisfaction = c(
+    rnorm(n = 100, mean = 70, sd = 5),
+    rnorm(n = 100, mean = 65, sd = 5),
+    rnorm(n = 100, mean = 25, sd = 5),
+    rnorm(n = 100, mean = 40, sd = 5),
+    rnorm(n = 100, mean = 62, sd = 5),
+    rnorm(n = 100, mean = 80, sd = 5)),
+  "Purchase Again" = c(
+    rnorm(n = 100, mean = 64, sd = 8),
+    rnorm(n = 100, mean = 60, sd = 8),
+    rnorm(n = 100, mean = 33, sd = 8),
+    rnorm(n = 100, mean = 38, sd = 8),
+    rnorm(n = 100, mean = 70, sd = 8),
+    rnorm(n = 100, mean = 75, sd = 8)),
+  "Willing to Pay" = c(
+    rnorm(n = 100, mean = 4.2, sd = 1.2),
+    rnorm(n = 100, mean = 5, sd = 1.2),
+    rnorm(n = 100, mean = 2, sd = .6),
+    rnorm(n = 100, mean = 2.5, sd = .8),
+    rnorm(n = 100, mean = 6, sd = 1.2),
+    rnorm(n = 100, mean = 6.5, sd = 1.2)),
+  "Reason for Use" = sample(c("Feel Good", "Concentrate", "Relax", "Sleep", "Pick Me Up", "Enhance Experience", "Other"), size = 600, replace = TRUE, prob = c(.3, .1, .15, .08, .07, .22, .08)))
+```
+
+
+Sidebar {.sidebar}
+=====================================
+
+Mood effects and customer satisfaction may vary by products used, motivations for use, or combinations of products and motivations.  You can use the radio buttons below to inspect combinations of products and motivations.
+
+<br>
+
+```{r}
+checkboxGroupInput(
+  inputId = "products",
+  label = "Products:",
+  choices = c("Product 1", "Product 2", "Product 3", "Product 4", "Product 5", "Product 6"),
+  select = c("Product 1", "Product 2", "Product 3", "Product 4", "Product 5", "Product 6")
+)
+```
+
+<br>
+
+
+```{r}
+checkboxGroupInput(
+  inputId = "reasons",
+  label = "Reasons for Use:",
+  choices = c("Feel Good", "Enhance Experience", "Relax", "Pick Me Up", "Concentrate", "Sleep", "Other"),
+  selected = c("Feel Good", "Enhance Experience", "Relax", "Pick Me Up", "Concentrate", "Sleep", "Other")
+)
+```
+
+
+
+
+
+Motivations {data-icon="fa-list-ol"}
+==================
+
+Row {data-height=100}
+----------------------
+
+### Participants Collected To Date
+```{r}
+participants = sum(!is.na(dat$Product))
+valueBox(value = participants, icon = "fa-users", color = "#c5b690")
+```
+
+### Products Used
+```{r}
+products = n_distinct(dat$Product)
+valueBox(value = products, icon = "fa-joint", color = "#c5b690")
+```
+
+### Days of Data Collection
+```{r}
+days = "94"
+valueBox(value = days, icon = "fa-calendar", color = "#c5b690")
+```
+
+
+
+Row {data-height=750}
+------------------------
+
+### 
+
+```{r}
+
+# Combine the selected variables into a new data frame
+selectedData <- reactive({
+  req(input$products, input$reasons)
+  dat %>% 
+    filter(.data[["Reason.for.Use"]] %in% .env$input$reasons) %>% 
+    filter(.data[["Product"]] %in% .env$input$products) 
+  })
+
+selectedData_prop <- reactive({
+  req(input$products, input$reasons)
+  dat %>% 
+    filter(.data[["Reason.for.Use"]] %in% .env$input$reasons) %>% 
+    filter(.data[["Product"]] %in% .env$input$products) %>% 
+  group_by(.data[["Reason.for.Use"]]) %>% 
+  summarize(freq = n()) %>% 
+  mutate(prop = freq / sum(freq))
+}) 
+
+
+renderPlot({
+  selectedData_prop() %>% 
+  treemap(
+    # data
+    index=c("Reason.for.Use"),
+    vSize="prop",
+    type="index",
+    
+    # Main
+    title="",
+    palette=can_pal,
+    
+    # Borders:
+    border.col=c("black"),             
+    border.lwds=1,                         
+    
+    # Labels
+    fontsize.label = 24,
+    fontcolor.labels = "white",
+    fontface.labels = 1,            
+    align.labels=c("left", "top"),                                 
+    overlap.labels = 0.5,
+    inflate.labels = FALSE                        # If true, labels are bigger when rectangle is bigger.
+  )
+})
+```
+
+
+
+### 
+
+```{r}
+renderDataTable({
+  selectedData_prop() %>% 
+    mutate(prop = round((freq / sum(freq) * 100), digits = 2)) %>%
+    rename("Reason for Use" = "Reason.for.Use",
+           "Frequency" = freq,
+           "Percent" = prop) %>% 
+    datatable(options = list(dom = 't'))
+})
+```
+
+
+Row {data-height=150}
+----------------------
+
+### About This Dashbaord
+
+This a dashboard demonstrating some of the functionality available in `flexdashboard`.  All of the data used in this dashboard has been simulated, but it resembles a possible small RWE data collection.  In the imagined data set, information on reasons for use, product type, mood effects, and product satisfaction were collected. Note that there are three pages in the dashboard; you can use the bar at the top to navigate between these pages.  `flexdasbhoard` allows for deployment of tables and figures, both of which can be interactive, as well as text descriptions, like this one.  In addition to the basic interactivity in these tables and figures, you can also use the radio buttons on the left to select different combinations of products and reasons for use to explore in the tables and figures in this dashboard.
+
+
+
+
+
+
+
+
+
+Mood Effects {data-icon="fa-cannabis"}
+==================
+
+
+Row {data-height = 500} {.tabset}
+-----------------------------------------------------------------------
+
+### Line Plot
+
+```{r}
+renderPlotly({
+  p4 <-  selectedData() %>% 
+  select(Product, Focused, Energized, Relaxed, Happy, Sleepy, Alert, Calm) %>%
+  pivot_longer(cols = c(Focused, Energized, Relaxed, Happy, Sleepy, Alert, Calm), values_to = "Value", names_to = "Measure") %>% 
+  ggplot(aes(color = Product, group = Product)) + 
+  stat_summary(mapping = aes(x = Measure, y = Value),
+               fun = mean,
+               geom = "line") + 
+  stat_summary(mapping = aes(x = Measure, y = Value),
+               fun = mean,
+               geom = "point") + 
+  scale_color_manual(values = can_pal) +  
+  scale_fill_manual(values = can_pal) +  
+  theme_light() + 
+  ylim(0, 100) + 
+  scale_x_discrete(limits = c("Alert", "Energized", "Focused", "Happy", "Relaxed", "Calm", "Sleepy")) + 
+  labs(y = "Rating", x = NULL)
+ggplotly(p4, tooltip = c("color", "x", "y"))
+})
+
+```
+
+### Radar Plot
+
+```{r}
+renderPlotly({
+p5 <- selectedData() %>% 
+  select(Product, Focused, Energized, Relaxed, Happy, Sleepy, Alert, Calm) %>% 
+  mutate_at(vars(-Product), scales::rescale) %>% 
+  group_by(Product) %>% 
+  summarize(Focused = mean(Focused, na.rm = TRUE),
+            Energized = mean(Energized, na.rm = TRUE),
+            Relaxed = mean(Relaxed, na.rm = TRUE),
+            Happy = mean(Happy, na.rm = TRUE),
+            Sleepy = mean(Sleepy, na.rm = TRUE),
+            Alert = mean(Alert, na.rm = TRUE),
+            Calm = mean(Calm, na.rm = TRUE)) %>% 
+  ggradar(base.size = 12, 
+          legend.text.size = 12, 
+          group.point.size = 2.5, 
+          group.line.width = .8, 
+          background.circle.transparency = 0.1) + 
+    scale_color_manual(values = can_pal) +  
+  scale_fill_manual(values = can_pal) +   
+  guides(fill = "none") + 
+  theme_minimal() + 
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+ggplotly(p5, tooltip = NULL)
+})
+```
+
+
+
+
+Row {data-height = 500}
+-----------------------------------------------------------------------
+
+
+### Raw Data
+
+```{r}
+  dat %>% 
+    select(Product, Reason.for.Use, Focused, Energized, Relaxed, Happy, Sleepy, Alert, Calm, everything()) %>% 
+    mutate(Willing.to.Pay = round(Willing.to.Pay, 2),
+           Satisfaction = round(Satisfaction, 0),
+           Purchase.Again = round(Purchase.Again, 0)) %>% 
+    rename("Reason for Use" = "Reason.for.Use",
+           "Willing to Pay" = "Willing.to.Pay",
+           "Purchase Again" = "Purchase.Again") %>% 
+    datatable(width = 800, extensions = 'Buttons', options = list(buttons = c('csv', 'excel'), dom = 'lfrtipB')) %>% 
+    formatRound(columns=c("Focused", "Energized", "Relaxed", "Happy", "Sleepy", "Alert", "Calm"), digits = 0)
+```
+
+
+
+
+
+
+
+
+
+Customer Satisfaction {data-icon="fa-thumbs-up"}
+==================
+
+
+Row {data-height = 500}
+-----------------------------------------------------------------------
+
+### Satistfaction with Product
+
+```{r}
+renderPlotly({
+p1 <- ggplot(selectedData(), aes(x = Product, y = Satisfaction, color = Product)) + 
+  geom_boxplot(outlier.alpha = 0) + 
+  geom_jitter(width = .2, alpha = .4) + 
+  scale_color_manual(values = can_pal) + 
+  scale_fill_manual(values = can_pal) + 
+  theme_light() + 
+  ylim(0, 100) + 
+  labs(y = "Satisfaction", x = NULL, title = "How Satisfied Are You With The Product (0 - 100)?")
+ggplotly(p1, tooltip = NULL)
+})
+```
+
+
+Row {data-height = 500}
+-----------------------------------------------------------------------
+
+### Purchase Again
+
+```{r}
+renderPlotly({
+  p2 <- 
+  ggplot(selectedData()) + 
+  geom_boxplot(aes(x = Product, y = Purchase.Again, color = Product), outlier.alpha = 0) + 
+  geom_jitter(aes(x = Product, y = Purchase.Again, color = Product), width = .2, alpha = .4) + 
+    scale_color_manual(values = can_pal) +  
+  scale_fill_manual(values = can_pal) +  
+  theme_light() + 
+  ylim(0, 100) + 
+  labs(y = "Purchase Again", x = NULL, title = "How Likely Are You To Purchase the Product Again (0 - 100)?")
+ggplotly(p2, tooltip = NULL)
+})
+```
+
+
+### Amount Willing to Pay
+
+```{r}
+renderPlotly({
+  p3 <- ggplot(selectedData()) + 
+  geom_boxplot(aes(x = Product, y = Willing.to.Pay, color = Product), outlier.alpha = 0) + 
+  geom_jitter(aes(x = Product, y = Willing.to.Pay, color = Product), width = .2, alpha = .4) + 
+    scale_color_manual(values = can_pal) + 
+  scale_fill_manual(values = can_pal) +   
+  theme_light() + 
+  labs(y = NULL, x = NULL, title = "How Much Are You Willing To Spend On The Product?") + 
+  ylim(0, 10.5) +
+  scale_y_continuous(labels=scales::dollar_format())
+ggplotly(p3, tooltip = NULL)
+})
+```
+
