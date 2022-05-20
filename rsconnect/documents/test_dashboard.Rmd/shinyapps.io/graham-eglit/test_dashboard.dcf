@@ -1,0 +1,11 @@
+name: test_dashboard
+title:
+username:
+account: graham-eglit
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6343432
+bundleId: 5928371
+url: https://graham-eglit.shinyapps.io/test_dashboard/
+when: 1653076249.78706
+lastSyncTime: 1653076249.78707
