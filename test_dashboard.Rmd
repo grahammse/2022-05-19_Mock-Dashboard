@@ -147,7 +147,7 @@ checkboxGroupInput(
 Motivations {data-icon="fa-list-ol"}
 ==================
 
-Row {data-height=100}
+Row {data-height=75}
 ----------------------
 
 ### Participants Collected To Date
@@ -170,7 +170,7 @@ valueBox(value = days, icon = "fa-calendar", color = "#c5b690")
 
 
 
-Row {data-height=750}
+Row {data-height=725}
 ------------------------
 
 ### 
@@ -231,6 +231,7 @@ renderPlot({
 renderDataTable({
   selectedData_prop() %>% 
     mutate(prop = round((freq / sum(freq) * 100), digits = 2)) %>%
+    arrange(desc(prop)) %>% 
     rename("Reason for Use" = "Reason.for.Use",
            "Frequency" = freq,
            "Percent" = prop) %>% 
@@ -239,12 +240,12 @@ renderDataTable({
 ```
 
 
-Row {data-height=150}
+Row {data-height=200}
 ----------------------
 
-### About This Dashbaord
+### 
 
-This a dashboard demonstrating some of the functionality available in `flexdashboard`.  All of the data used in this dashboard has been simulated, but it resembles a possible small RWE data collection.  In the imagined data set, information on reasons for use, product type, mood effects, and product satisfaction were collected. Note that there are three pages in the dashboard; you can use the bar at the top to navigate between these pages.  `flexdasbhoard` allows for deployment of tables and figures, both of which can be interactive, as well as text descriptions, like this one.  In addition to the basic interactivity in these tables and figures, you can also use the radio buttons on the left to select different combinations of products and reasons for use to explore in the tables and figures in this dashboard.
+This a dashboard demonstrating some of the functionality available in `flexdashboard`.  All of the data used in this dashboard has been simulated, but it resembles a possible small consumer-focused data collection.  In the imagined data set, information on reasons for use, product type, mood effects, and product satisfaction were collected. Note that there are three pages in the dashboard; you can use the bar at the top to navigate between these pages.  `flexdasbhoard` allows for deployment of tables and figures, both of which can be interactive, as well as text descriptions, like this one.  In addition to the basic interactivity in these tables and figures, you can also use the radio buttons on the left to select different combinations of products and reasons for use to explore in the tables and figures.
 
 
 
@@ -325,7 +326,7 @@ Row {data-height = 500}
 -----------------------------------------------------------------------
 
 
-### Raw Data
+### 
 
 ```{r}
   dat %>% 
@@ -336,7 +337,7 @@ Row {data-height = 500}
     rename("Reason for Use" = "Reason.for.Use",
            "Willing to Pay" = "Willing.to.Pay",
            "Purchase Again" = "Purchase.Again") %>% 
-    datatable(width = 800, extensions = 'Buttons', options = list(buttons = c('csv', 'excel'), dom = 'lfrtipB')) %>% 
+    datatable(width = 800, extensions = 'Buttons', options = list(pageLength = 600, buttons = c('csv', 'excel'), dom = 'ftB')) %>% 
     formatRound(columns=c("Focused", "Energized", "Relaxed", "Happy", "Sleepy", "Alert", "Calm"), digits = 0)
 ```
 
@@ -355,7 +356,7 @@ Customer Satisfaction {data-icon="fa-thumbs-up"}
 Row {data-height = 500}
 -----------------------------------------------------------------------
 
-### Satistfaction with Product
+### 
 
 ```{r}
 renderPlotly({
@@ -375,7 +376,7 @@ ggplotly(p1, tooltip = NULL)
 Row {data-height = 500}
 -----------------------------------------------------------------------
 
-### Purchase Again
+### 
 
 ```{r}
 renderPlotly({
@@ -393,7 +394,7 @@ ggplotly(p2, tooltip = NULL)
 ```
 
 
-### Amount Willing to Pay
+### 
 
 ```{r}
 renderPlotly({
